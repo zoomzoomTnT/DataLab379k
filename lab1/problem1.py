@@ -3,6 +3,7 @@
 Spyder Editor
 
 This is a temporary script file.
+@author: Josh M, Zhicong Z
 """
 
 import numpy as np

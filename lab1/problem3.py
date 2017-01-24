@@ -2,7 +2,7 @@
 """
 Created on Fri Jan 20 10:42:36 2017
 
-@author: Josh M
+@author: Josh M, Zhicong Z
 """
 
 import math

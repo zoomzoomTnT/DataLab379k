@@ -7,7 +7,6 @@ Created on Fri Jan 20 10:42:36 2017
 
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Mean Calculation
 def mean(n):
@@ -28,7 +27,4 @@ print("Mean:  "+ str(x))
 
 # Standard Deviation of Gaussian Dist.
 y = std(s)
-print("\n")
 print("Standard Deviation:  " + str(y))
-
-plt.show()

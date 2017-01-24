@@ -4,17 +4,23 @@ Created on Fri Jan 20 11:15:35 2017
 
 @author: Josh M
 """
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-mean = [-5,5]
-cov = [[20,.8], [.8,30]]
+def mean(n):
+    return float(sum(n))/max(len(n),1)
 
-x,y = np.random.multivariate_normal(mean, cov, 10000).T
-plt.plot(x,y,'x')
-plt.axis('equal')
+mltmean = [-5,5]
+mltcov = [[20,.8], [.8,30]]
 
+x,y = np.random.multivariate_normal(mltmean, mltcov, 10000).T
+print("\n")
+print("Covarience Matrix:")
 print(np.cov(x,y))
-print(np.mean(np.mean(x)+np.mean(y)))
+
+print("\n")
+avg = (mean(x) + mean(y)) / 2
+print("Mean: " + str(avg))
 
 plt.show()

@@ -11,18 +11,17 @@ import matplotlib.pyplot as plt
 
 
 def mean(n):
-    return float(sum(n)) / max(len(n), 1)
+    return float(sum(n))/max(len(n),1)
 
 mu, sigma = 0, 5
 s = np.random.normal(mu, sigma, 25000)
 
-plt.hist(s, 30, normed=True)
-
-counter = 0
-for i in s:
-    counter += i
-
-x = counter/25000
+x = mean(s)
 y = math.sqrt(mean(abs(s - mean(s))**2))
-print("mean: "+ str(x) + " sd: " + str(y))
+print("\n")
+print("Mean:  "+ str(x))
+
+print("\n")
+print("Standard Deviation:  " + str(y))
+
 plt.show()

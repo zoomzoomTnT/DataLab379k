@@ -2,11 +2,10 @@
 """
 Created on Fri Jan 20 11:15:35 2017
 
-@author: Josh M
+@author: Josh M, Zhicong Z
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Mean Calculation
 def mean(n):
@@ -47,5 +46,3 @@ print("[" + str(cov(y,x)) + " , " + str(cov(y,y)) + "]")
 print("\n")
 avg = (mean(x) + mean(y)) / 2
 print("Mean: " + str(avg))
-
-plt.show()

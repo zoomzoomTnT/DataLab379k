@@ -2,7 +2,7 @@
 """
 Created on Fri Jan 20 10:08:27 2017
 
-@author: Josh M
+@author: Josh M, Zhicong Z
 """
 import numpy as np
 
@@ -22,5 +22,6 @@ for j in range(1000):
     avg = sum/n
     z[j] = avg
 
-count, bins, ignored = plt.hist(z, 30, normed=True)
+count, bins, ignored = plt.hist(z, 300, normed=True)
+plt.title("Bernoulli random variable Bell Curve")
 plt.show()

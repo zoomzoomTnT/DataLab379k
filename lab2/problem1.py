@@ -3,10 +3,12 @@
 Created on Fri Jan 27 09:42:21 2017
 
 @author: Josh M
-"""
 
-import numpy as np
-from pandas import *
+"""
+import matplotlib.pyplot as plt
+import pandas as pd
+#import seaborn as sns
+
 #from libraries.settings import *
 from scipy.stats.stats import pearsonr
 import itertools
@@ -22,7 +24,15 @@ print(df)
 for col_a, col_b in itertools.combinations(col, 2):
     pairwisecorr[col_a + '__' + col_b] = pearsonr(df.loc[:, col_a], df.loc[:, col_b])
 
-result = DataFrame.from_dict(pairwisecorr, orient='index')
-result.columns = ['PCC', 'p-value']
+result = pd.DataFrame.from_dict(pairwisecorr, orient='index')
+result.columns = ['pcc', 'pvalue']
 
-print(result.sort_index())
+print(result.ix[:,0:1])
+
+plt.scatter(df['col1'], df['col3'])
+plt.show()
+
+plt.scatter(df['col2'], df['col4'])
+plt.show()
+
+

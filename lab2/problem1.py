@@ -7,6 +7,8 @@ Created on Fri Jan 27 09:42:21 2017
 """
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
+
 #import seaborn as sns
 
 #from libraries.settings import *
@@ -35,4 +37,5 @@ plt.show()
 plt.scatter(df['col2'], df['col4'])
 plt.show()
 
-
+sns.lmplot("col1", "col3", data=df, fit_reg=False)
+sns.lmplot("col2", "col4", data=df, fit_reg=False)

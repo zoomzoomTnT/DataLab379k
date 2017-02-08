@@ -1,9 +1,11 @@
 
 # coding: utf-8
 
+# LAB3 Zhicong Zhang, Dale Song
+
 # # problem1
 
-# In[6]:
+# In[1]:
 
 import numpy as np
 import sympy
@@ -40,7 +42,7 @@ print ("Matrix 2 pivot rows: ",len(nonspan_reduced[1]))
 
 # 1B
 
-# In[7]:
+# In[2]:
 
 rank = len(orig_reduced[1])
 print("Subspace rank of matrix: ",rank," for \n{}".format(orig_mat))
@@ -48,7 +50,7 @@ print("Subspace rank of matrix: ",rank," for \n{}".format(orig_mat))
 
 # 1C
 
-# In[8]:
+# In[3]:
 
 q,r = np.linalg.qr(orig_mat)
 print('Orthonormal col basis for the subspace S:\n',q[:, :rank])
@@ -61,7 +63,7 @@ print('Orthonormal col basis for the subspace S:\n',q[:, :rank])
 # 1D Solve the optimization problem minx∈S||x − z∗||2 where z∗ = [1, 0, 0, 0].
 # ~~~~~~~~~
 
-# In[16]:
+# In[5]:
 
 obasis = q[:, :rank].T
 v1 = obasis[0]
@@ -77,7 +79,7 @@ z = [1,0,0,0]
 
 # # #2
 
-# In[25]:
+# In[6]:
 
 #2.1
 from mpl_toolkits.mplot3d import Axes3D
@@ -111,7 +113,7 @@ for i in range(0,20):
 plt.show()
 
 
-# In[27]:
+# In[7]:
 
 #2.3
 X = np.concatenate((zero_mean_gauss, one_mean_gauss), axis=0)
@@ -142,9 +144,30 @@ print (cov_matrix)
 
 
 
-# In[28]:
+# In[11]:
 
 #2.4
+eigen_val, eigen_vec = np.linalg.eig(cov_matrix)
+print (eigen_val)
+print (eigen_vec)
+
+for i in range(len(eigen_val)):
+    e_vec = eigen_vec[:,i].reshape(1,3).T
+    print('Eigenvector {}: \n{}'.format(i+1, e_vec))
+    print('Eigenvalue {} from covariance matrix: {}'.format(i+1, eigen_val[i]))
+    print(50 * '-')
+    
+#create matrix W  for y = WT x X
+
+eigen_pairs = [(eigen_val[i], eigen_vec[:,i]) for i in range(len(eigen_val))]
+eigen_pairs.sort(key=lambda x: x[0], reverse=True)
+
+W_mat = np.hstack((eigen_pairs[0][1], eigen_pairs[1][1]))
+
+y = W_mat.T.dot(X.T)
+plt.plot(y[0, 0:20], y[1, 0:20], marker='o', color='blue', label='label1')
+plt.plot(y[0, 20:40], y[1, 20:40], marker='^', color='red', label='label2')
+plt.show()
 
 
 # In[ ]:
@@ -154,7 +177,7 @@ print (cov_matrix)
 
 # # problem3
 
-# In[24]:
+# In[12]:
 
 from scipy import misc
 
@@ -172,6 +195,176 @@ for i in [2,5,10]:
     plt.show()
     print("size of picture: %s bits"%(pic.shape[0]*pic.shape[1]*i*2*8))
 
+
+# # problem4
+
+# In[13]:
+
+import seaborn as sns
+import pandas as pd
+import matplotlib
+from scipy.stats import skew
+from scipy.stats.stats import pearsonr
+
+train = pd.read_csv('train.csv')
+test = pd.read_csv('test.csv')
+train.head()
+
+
+# In[14]:
+
+all_data = pd.concat((train.loc[:,'MSSubClass':'SaleCondition'],
+                      test.loc[:,'MSSubClass':'SaleCondition']))
+
+
+# In[15]:
+
+matplotlib.rcParams['figure.figsize'] = (12.0, 6.0)
+prices = pd.DataFrame({"price":train["SalePrice"], "log(price + 1)":np.log1p(train["SalePrice"])})
+prices.hist()
+#log transform the target:
+train["SalePrice"] = np.log1p(train["SalePrice"])
+
+#log transform skewed numeric features:
+numeric_feats = all_data.dtypes[all_data.dtypes != "object"].index
+
+skewed_feats = train[numeric_feats].apply(lambda x: skew(x.dropna())) #compute skewness
+skewed_feats = skewed_feats[skewed_feats > 0.75]
+skewed_feats = skewed_feats.index
+
+all_data[skewed_feats] = np.log1p(all_data[skewed_feats])
+all_data = pd.get_dummies(all_data)
+#filling NA's with the mean of the column:
+all_data = all_data.fillna(all_data.mean())
+#creating matrices for sklearn:
+X_train = all_data[:train.shape[0]]
+X_test = all_data[train.shape[0]:]
+y = train.SalePrice
+from sklearn.linear_model import Ridge, RidgeCV, ElasticNet, LassoCV, LassoLarsCV
+from sklearn.model_selection import cross_val_score
+
+def rmse_cv(model):
+    rmse= np.sqrt(-cross_val_score(model, X_train, y, scoring="neg_mean_squared_error", cv = 5))
+    return(rmse)
+model_ridge = Ridge()
+alphas = [0.1]
+cv_ridge = [rmse_cv(Ridge(alpha = alpha)).mean() 
+            for alpha in alphas]
+cv_ridge = pd.Series(cv_ridge, index = alphas)
+cv_ridge
+
+
+# # The RMSE value of the ridge regression with alpha = 0.1 was 0.137775 .
+
+# # Our own attempt:
+# 
+
+# In[16]:
+
+train = pd.read_csv("train.csv")
+test = pd.read_csv("test.csv")
+
+label_name = 'SalePrice'
+y = train[label_name]
+X = train.drop(label_name,axis=1)
+
+#first let's test if 1stFlrSF and 2ndFlrSF = GrLivArea, always
+#for index, row in train.iterrows():
+#    if(row['1stFlrSF'] + row['2ndFlrSF'] != row['GrLivArea']):
+#        print row['1stFlrSF'], "+", row['2ndFlrSF'], "!=", row['GrLivArea']
+        
+# as you can see, there are quite a few where 1stFlrSF + 2ndFlrSF != GrLivArea always. let's try to add LowQualFinSF
+for index, row in train.iterrows():
+    if(row['1stFlrSF'] + row['2ndFlrSF'] + row['LowQualFinSF'] != row['GrLivArea']):
+        print (row['1stFlrSF'], "+", row['2ndFlrSF'], "+", row['LowQualFinSF'], "!=", row['GrLivArea'])
+        
+# sweet, so now we know that 1stFlrSF + 2ndFlrSF + LowQualFinSF = GrLivArea. So let's say that the 
+# TotalSF = GrLivArea + TotalBsmtSF
+train['TotalSF'] = np.log1p(train['GrLivArea'] + train['TotalBsmtSF'])
+test['TotalSF'] = np.log1p(test['GrLivArea'] + test['TotalBsmtSF'])
+
+features = train.columns.difference(['Id','SalePrice'])
+
+train_test = pd.concat((train[features], test[features]))
+num_features = train_test.dtypes[train_test.dtypes != "object"].index
+
+skewed_feats = train_test[num_features].apply(lambda x: skew(x.dropna())) #compute skewness
+
+# 0.75 gives 22 skewed features
+# 0.6 gives 25
+# 0.3 gives 27      0.11793
+# 0.2 gives 28 
+# 0.18 gives 30     0.11776
+# 0.15 gives 31     
+# 0.1 gives 32
+# 0.0 gives 32      0.11766
+# -1 gives 37
+# -100 gives 38     0.11692
+
+
+skewed_feats = skewed_feats[skewed_feats > 0]
+
+print ("There are " + str(len(skewed_feats)) + " skewed features")
+print (skewed_feats)
+
+skewed_feats = skewed_feats.index
+train_test[skewed_feats] = np.log1p(train_test[skewed_feats])
+
+
+train["SalePrice"] = np.log1p(train["SalePrice"])
+train_test = pd.get_dummies(train_test)
+
+num_train_rows = train.shape[0]
+
+
+train_test = train_test.fillna(train_test[:num_train_rows].mean())
+
+X_train = train_test[:num_train_rows]
+X_test = train_test[num_train_rows:]
+
+y = train.SalePrice
+##################
+# SCALE FEATURES #
+##################
+from sklearn.preprocessing import RobustScaler
+
+robust_scaler = RobustScaler()
+X_train_i = X_train.index
+X_train_c = X_train.columns
+X_test_i = X_test.index
+X_test_c = X_test.columns
+
+X_train_scaled = robust_scaler.fit_transform(X_train)
+X_test_scaled = robust_scaler.transform(X_test)
+
+X_train = pd.DataFrame(X_train_scaled, index=X_train_i, columns=X_train_c)
+X_test = pd.DataFrame(X_test_scaled, index=X_test_i, columns=X_test_c)
+
+from sklearn.model_selection import GridSearchCV
+
+lasso = LassoCV(alphas = [1, 0.1, 0.001, 0.0005], selection='random', max_iter=30000)
+lasso.fit(X_train, y)
+coef = pd.Series(lasso.coef_, index = X_train.columns)
+print("Lasso picked " + str(sum(coef != 0)) + " variables and eliminated the other " +  str(sum(coef == 0)) + " variables")
+print ("Score: " + str(lasso.score(X_train, y)))
+print ("Alpha: " + str(lasso.alpha_))
+
+imp_coef = pd.concat([coef.sort_values().head(10),
+                     coef.sort_values().tail(10)])
+matplotlib.rcParams['figure.figsize'] = (8.0, 10)
+imp_coef.plot(kind = "barh")
+
+plt.title("Coefficients in the Lasso Model")
+
+test_preds = np.expm1(lasso.predict(X_test))
+submission = pd.DataFrame()
+submission['Id'] = test['Id']
+submission['SalePrice'] = test_preds
+submission.to_csv("asdfasdf.csv", index=False)
+
+
+# The best solution we could come up with gave us an RMSE of 0.11884 .
+# We approached this with the intuition that the total amount of square footage of the house would be a significant factor in buying a house. So our first step was to combine features that gaves us a new feature called TotalSF. We see that TotalSF is in fact an important feature in our set from the bar plot above. Afterwards, we used a RobustScaler to scale our data. Kaggle gave our model a score of 0.11884.
 
 # In[ ]:
 
